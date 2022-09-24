@@ -19,7 +19,7 @@ class MedecinModel(BaseModel):
                 "speciality": 'Speciality 1',
                 "nom": 'Name 1',
                 "prenom": 'First Name 1',
-                "adresse": 'Adresse 1',
+                "address": 'Adresse 1',
                 "tele": 'Télé 1'
             }
         }

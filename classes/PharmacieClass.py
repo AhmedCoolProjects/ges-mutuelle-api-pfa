@@ -15,7 +15,7 @@ class PharmacyModel(BaseModel):
         schema_extra = {
             "example": {
                 "nom": 'Name 1',
-                "adresse": 'Adresse 1',
-                "tele": 'Télé 1'
+                "address": 'Adresse 1',
+                "tele": '0548481'
             }
         }
