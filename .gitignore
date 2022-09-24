@@ -4,3 +4,5 @@ _pycache_
 venv/
 /venv
 venv/*
+
+.env
