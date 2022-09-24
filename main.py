@@ -7,6 +7,7 @@ from classes.AgentClass import AgentModel
 from classes.PharmacieClass import PharmacyModel
 from classes.MedecinClass import MedecinModel
 from fastapi.middleware.cors import CORSMiddleware
+from classes.DossierClass import DossierModel
 
 app = FastAPI()
 
@@ -167,3 +168,46 @@ async def delete_pharmacie(id: str):
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     return Response(status_code=status.HTTP_404_NOT_FOUND, content="Pharmacie not found")
+
+# DOSSIER OPERATIONS
+@app.get("/dossiers/all", response_description="List all dossiers")
+async def list_dossiers():
+    dossiers = []
+    for dossier in await db["dossiers"].find().to_list(100):
+        dossiers.append(dossier)
+    return dossiers
+
+@app.get("/dossiers/{id}", response_description="Get a single dossier", response_model=DossierModel)
+async def show_dossier(id: str):
+    if (dossier := await db["dossiers"].find_one({"_id": id})) is not None:
+        return dossier
+    else:
+        return Response(status_code=status.HTTP_404_NOT_FOUND, content="dossier not found")
+
+@app.post("/dossiers/add", response_description="Add new dossier", response_model=DossierModel)
+async def create_dossier(dossier: DossierModel = Body(...)):
+    dossier = jsonable_encoder(dossier)
+    new_dossier = await db["dossiers"].insert_one(dossier)
+    created_dossier = await db["dossiers"].find_one({"_id": new_dossier.inserted_id})
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_dossier)
+
+@app.post("/dossiers/update/{id}", response_description="Update a dossier", response_model=DossierModel)
+async def update_dossier(id: str, dossier: DossierModel = Body(...)):
+    dossier = {k: v for k, v in dossier.dict().items() if v is not None}
+    if len(dossier) >= 1:
+        update_result = await db["dossiers"].update_one({"_id": id}, {"$set": dossier})
+        if update_result.modified_count == 1:
+            if (
+                updated_dossier := await db["dossiers"].find_one({"_id": id})
+            ) is not None:
+                return updated_dossier
+    if (existing_dossier := await db["dossiers"].find_one({"_id": id})) is not None:
+        return existing_dossier
+    return Response(status_code=status.HTTP_404_NOT_FOUND, content="dossier not found")
+
+@app.delete("/dossiers/delete/{id}", response_description="Delete a dossier")
+async def delete_dossier(id: str):
+    delete_result = await db["dossiers"].delete_one({"_id": id})
+    if delete_result.deleted_count == 1:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_404_NOT_FOUND, content="dossier not found")
